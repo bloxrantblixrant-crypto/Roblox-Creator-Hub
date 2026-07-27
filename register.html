@@ -1,62 +1,102 @@
 <!DOCTYPE html>
-
 <html>
 
 <head>
-
-<title>Register</title>
-
+<title>Register - Roblox Creator Hub</title>
 <link rel="stylesheet" href="css/style.css">
-
-<meta name="viewport" content="width=device-width, initial-scale=1">
-
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 </head>
-
 
 <body>
 
-
 <div class="login-container">
-
 
 <h1>Create Account</h1>
 
-
 <input id="username" placeholder="Username">
 
-
-<input id="email" placeholder="Email">
-
+<input id="email" type="email" placeholder="Email">
 
 <input id="password" type="password" placeholder="Password">
 
-
-<button id="registerBtn">
-
+<button onclick="register()">
 Register
-
 </button>
 
-
 <p>
-
 Already have an account?
-
-<a href="login.html">
-
-Login
-
-</a>
-
+<a href="login.html">Login</a>
 </p>
-
 
 </div>
 
 
+<script type="module">
 
-<script type="module" src="./js/auth.js"></script>
+import { auth, db } from "./js/firebase.js";
 
+import {
+createUserWithEmailAndPassword
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+
+import {
+doc,
+setDoc
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+
+window.register = async function(){
+
+let username =
+document.getElementById("username").value;
+
+let email =
+document.getElementById("email").value;
+
+let password =
+document.getElementById("password").value;
+
+
+try{
+
+
+let user =
+await createUserWithEmailAndPassword(
+auth,
+email,
+password
+);
+
+
+await setDoc(
+doc(db,"users",user.user.uid),
+{
+username:username,
+email:email,
+bio:"New Roblox Creator",
+avatar:"assets/images/default.png"
+}
+);
+
+
+alert("Account created!");
+
+window.location.href="profile.html";
+
+
+}
+
+catch(error){
+
+alert(error.message);
+
+}
+
+
+}
+
+
+</script>
 
 </body>
 
