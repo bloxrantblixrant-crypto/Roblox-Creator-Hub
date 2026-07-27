@@ -2,52 +2,42 @@ import { auth, db } from "./firebase.js";
 
 
 import {
-
 createUserWithEmailAndPassword,
-
 signInWithEmailAndPassword,
-
 GoogleAuthProvider,
-
-signInWithPopup,
-
-onAuthStateChanged
-
-} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+signInWithPopup
+} 
+from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
 
 import {
-
 doc,
-
 setDoc
-
-} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+}
+from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 
 
 
 // REGISTER
 
-const registerBtn =
-document.getElementById("registerBtn");
+const registerBtn = document.getElementById("registerBtn");
 
 
 if(registerBtn){
 
-
 registerBtn.onclick = async()=>{
 
 
-const username =
+let username =
 document.getElementById("username").value;
 
 
-const email =
+let email =
 document.getElementById("email").value;
 
 
-const password =
+let password =
 document.getElementById("password").value;
 
 
@@ -55,7 +45,7 @@ document.getElementById("password").value;
 try{
 
 
-const account =
+const userCredential =
 await createUserWithEmailAndPassword(
 auth,
 email,
@@ -66,19 +56,21 @@ password
 
 await setDoc(
 
-doc(db,"users",account.user.uid),
+doc(
+db,
+"users",
+userCredential.user.uid
+),
 
 {
 
-username:username,
+username: username,
 
-email:email,
+email: email,
 
-bio:"New Roblox Creator",
+bio: "New Roblox Creator",
 
-avatar:"assets/images/default.png",
-
-created:Date.now()
+avatar: "assets/images/default.png"
 
 }
 
@@ -86,15 +78,17 @@ created:Date.now()
 
 
 
+alert("Account created!");
+
 window.location.href="profile.html";
 
 
 }
 
+
 catch(error){
 
-document.getElementById("error").innerHTML =
-error.message;
+alert(error.message);
 
 }
 
@@ -108,7 +102,7 @@ error.message;
 
 
 
-// EMAIL LOGIN
+// LOGIN
 
 
 const loginBtn =
@@ -121,11 +115,11 @@ if(loginBtn){
 loginBtn.onclick = async()=>{
 
 
-const email =
+let email =
 document.getElementById("email").value;
 
 
-const password =
+let password =
 document.getElementById("password").value;
 
 
@@ -150,12 +144,10 @@ window.location.href="profile.html";
 
 }
 
+
 catch(error){
 
-
-document.getElementById("error").innerHTML =
-"Wrong email or password";
-
+alert(error.message);
 
 }
 
@@ -164,8 +156,6 @@ document.getElementById("error").innerHTML =
 
 
 }
-
-
 
 
 
@@ -202,7 +192,11 @@ provider
 
 await setDoc(
 
-doc(db,"users",result.user.uid),
+doc(
+db,
+"users",
+result.user.uid
+),
 
 {
 
@@ -212,14 +206,11 @@ result.user.displayName || "Roblox Creator",
 email:
 result.user.email,
 
-bio:
-"New Roblox Creator",
-
 avatar:
 result.user.photoURL || "assets/images/default.png",
 
-created:
-Date.now()
+bio:
+"New Roblox Creator"
 
 },
 
@@ -236,12 +227,10 @@ window.location.href="profile.html";
 
 }
 
+
 catch(error){
 
-
-document.getElementById("error").innerHTML =
-error.message;
-
+alert(error.message);
 
 }
 
@@ -250,27 +239,3 @@ error.message;
 
 
 }
-
-
-
-
-
-
-
-// CHECK LOGIN
-
-
-onAuthStateChanged(auth,(user)=>{
-
-
-if(user){
-
-console.log(
-"Logged in:",
-user.email
-);
-
-}
-
-
-});
