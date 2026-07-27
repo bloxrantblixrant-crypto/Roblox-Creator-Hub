@@ -1,84 +1,115 @@
 import { auth, db } from "./firebase.js";
 
-import {
-    createUserWithEmailAndPassword,
-    signInWithEmailAndPassword,
-    onAuthStateChanged
-} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
 import {
-    doc,
-    setDoc
+
+createUserWithEmailAndPassword,
+
+signInWithEmailAndPassword,
+
+GoogleAuthProvider,
+
+signInWithPopup,
+
+onAuthStateChanged
+
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+
+
+import {
+
+doc,
+
+setDoc
+
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 
-// REGISTER SYSTEM
 
-const registerBtn = document.getElementById("registerBtn");
+
+// REGISTER
+
+const registerBtn =
+document.getElementById("registerBtn");
 
 
 if(registerBtn){
 
-    registerBtn.onclick = async()=>{
 
-        const username =
-        document.getElementById("username").value;
-
-        const email =
-        document.getElementById("email").value;
-
-        const password =
-        document.getElementById("password").value;
+registerBtn.onclick = async()=>{
 
 
-        try{
-
-            const account =
-            await createUserWithEmailAndPassword(
-                auth,
-                email,
-                password
-            );
+const username =
+document.getElementById("username").value;
 
 
-            await setDoc(
-                doc(db,"users",account.user.uid),
-                {
-
-                    username: username,
-
-                    email: email,
-
-                    bio:"New Roblox Creator",
-
-                    avatar:"assets/images/default.png",
-
-                    created:Date.now()
-
-                }
-            );
+const email =
+document.getElementById("email").value;
 
 
-            alert("Account created!");
+const password =
+document.getElementById("password").value;
 
-            window.location.href="profile.html";
 
 
-        }
-        catch(error){
+try{
 
-            document.getElementById("error").innerHTML =
-            error.message;
 
-        }
+const account =
+await createUserWithEmailAndPassword(
+auth,
+email,
+password
+);
 
-    };
+
+
+await setDoc(
+
+doc(db,"users",account.user.uid),
+
+{
+
+username:username,
+
+email:email,
+
+bio:"New Roblox Creator",
+
+avatar:"assets/images/default.png",
+
+created:Date.now()
+
+}
+
+);
+
+
+
+window.location.href="profile.html";
+
+
+}
+
+catch(error){
+
+document.getElementById("error").innerHTML =
+error.message;
+
+}
+
+
+};
+
 
 }
 
 
 
-// LOGIN SYSTEM
+
+
+// EMAIL LOGIN
+
 
 const loginBtn =
 document.getElementById("loginBtn");
@@ -86,60 +117,160 @@ document.getElementById("loginBtn");
 
 if(loginBtn){
 
-    loginBtn.onclick = async()=>{
+
+loginBtn.onclick = async()=>{
 
 
-        const email =
-        document.getElementById("email").value;
+const email =
+document.getElementById("email").value;
 
 
-        const password =
-        document.getElementById("password").value;
+const password =
+document.getElementById("password").value;
 
 
 
-        try{
+try{
 
 
-            await signInWithEmailAndPassword(
-                auth,
-                email,
-                password
-            );
+await signInWithEmailAndPassword(
+
+auth,
+
+email,
+
+password
+
+);
 
 
-            window.location.href="profile.html";
+
+window.location.href="profile.html";
 
 
-        }
-        catch(error){
+}
 
-            document.getElementById("error").innerHTML =
-            "Wrong email or password";
-
-        }
+catch(error){
 
 
-    };
+document.getElementById("error").innerHTML =
+"Wrong email or password";
+
+
+}
+
+
+};
+
 
 }
 
 
 
 
+
+
+
+// GOOGLE LOGIN
+
+
+const googleBtn =
+document.getElementById("googleBtn");
+
+
+if(googleBtn){
+
+
+googleBtn.onclick = async()=>{
+
+
+const provider =
+new GoogleAuthProvider();
+
+
+
+try{
+
+
+const result =
+await signInWithPopup(
+auth,
+provider
+);
+
+
+
+await setDoc(
+
+doc(db,"users",result.user.uid),
+
+{
+
+username:
+result.user.displayName || "Roblox Creator",
+
+email:
+result.user.email,
+
+bio:
+"New Roblox Creator",
+
+avatar:
+result.user.photoURL || "assets/images/default.png",
+
+created:
+Date.now()
+
+},
+
+{
+merge:true
+}
+
+);
+
+
+
+window.location.href="profile.html";
+
+
+}
+
+catch(error){
+
+
+document.getElementById("error").innerHTML =
+error.message;
+
+
+}
+
+
+};
+
+
+}
+
+
+
+
+
+
+
 // CHECK LOGIN
+
 
 onAuthStateChanged(auth,(user)=>{
 
 
-    if(user){
+if(user){
 
-        console.log(
-            "Logged in:",
-            user.email
-        );
+console.log(
+"Logged in:",
+user.email
+);
 
-    }
+}
 
 
 });
