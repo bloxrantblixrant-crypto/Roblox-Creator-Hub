@@ -1,0 +1,554 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Gallery - Roblox Creator Hub</title>
+
+<link rel="stylesheet" href="css/style.css">
+
+</head>
+
+
+<body>
+
+
+<header>
+
+<div class="logo">
+🎮 Roblox Creator Hub
+</div>
+
+<nav>
+<a href="index.html">Home</a>
+<a href="gallery.html">Gallery</a>
+<a href="profile.html">Profile</a>
+</nav>
+
+</header>
+
+
+
+
+<section class="gallery-container">
+
+
+<h1>
+🖼 Creator Gallery
+</h1>
+
+
+
+<div class="upload-box">
+
+<h2>
+Upload Roblox Content
+</h2>
+
+
+<input 
+type="file"
+id="file"
+accept="image/*,video/*">
+
+
+<button id="uploadBtn">
+Upload
+</button>
+
+
+</div>
+
+
+
+<div id="posts">
+
+Loading posts...
+
+</div>
+
+
+
+</section>
+
+
+
+
+
+
+<style>
+
+
+.gallery-container{
+
+max-width:1000px;
+margin:40px auto;
+padding:20px;
+
+}
+
+
+.upload-box,
+.post{
+
+background:#171b24;
+padding:25px;
+border-radius:20px;
+margin-bottom:25px;
+
+}
+
+
+
+button{
+
+background:linear-gradient(
+90deg,
+#4cc9ff,
+#7b5cff
+);
+
+border:none;
+padding:12px 25px;
+border-radius:10px;
+
+color:white;
+cursor:pointer;
+
+}
+
+
+
+.post img,
+.post video{
+
+width:100%;
+border-radius:15px;
+
+}
+
+
+
+.username{
+
+color:#6ab7ff;
+font-weight:bold;
+
+}
+
+
+
+.like{
+
+cursor:pointer;
+font-size:20px;
+
+}
+
+
+
+.comment-box{
+
+display:flex;
+gap:10px;
+margin-top:15px;
+
+}
+
+
+.comment-box input{
+
+flex:1;
+
+background:#242938;
+
+border:none;
+
+padding:10px;
+
+border-radius:10px;
+
+color:white;
+
+}
+
+
+
+.comment{
+
+color:#bbb;
+margin-top:10px;
+
+}
+
+
+
+</style>
+
+
+
+
+
+
+
+<script type="module">
+
+
+import {auth,db,storage} from "./js/firebase.js";
+
+
+
+import {
+
+ref,
+uploadBytes,
+getDownloadURL
+
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-storage.js";
+
+
+
+import {
+
+collection,
+addDoc,
+getDocs,
+doc,
+updateDoc,
+increment,
+query,
+orderBy
+
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+
+
+
+
+
+// Upload
+
+
+document.getElementById("uploadBtn").onclick = async()=>{
+
+
+const file =
+document.getElementById("file").files[0];
+
+
+if(!file){
+
+alert("Select a file");
+
+return;
+
+}
+
+
+
+const user = auth.currentUser;
+
+
+if(!user){
+
+alert("Login first");
+
+return;
+
+}
+
+
+
+const uploadRef =
+ref(
+storage,
+"uploads/"+Date.now()+file.name
+);
+
+
+
+await uploadBytes(uploadRef,file);
+
+
+
+const url =
+await getDownloadURL(uploadRef);
+
+
+
+await addDoc(
+collection(db,"uploads"),
+{
+
+url:url,
+
+username:user.email,
+
+likes:0,
+
+created:Date.now()
+
+}
+
+);
+
+
+
+alert("Uploaded!");
+
+location.reload();
+
+
+};
+
+
+
+
+
+
+
+// Load posts
+
+
+async function loadPosts(){
+
+
+const posts =
+document.getElementById("posts");
+
+
+
+posts.innerHTML="";
+
+
+
+const q =
+query(
+collection(db,"uploads"),
+orderBy("created","desc")
+);
+
+
+
+const snapshot =
+await getDocs(q);
+
+
+
+snapshot.forEach((item)=>{
+
+
+const data=item.data();
+
+
+
+posts.innerHTML += `
+
+
+<div class="post">
+
+
+<p class="username">
+
+👤 ${data.username}
+
+</p>
+
+
+
+<img src="${data.url}">
+
+
+
+<p 
+class="like"
+onclick="likePost('${item.id}')">
+
+❤️ ${data.likes || 0}
+
+</p>
+
+
+
+<div class="comment-box">
+
+<input 
+id="comment-${item.id}"
+placeholder="Write a comment">
+
+
+<button onclick="comment('${item.id}')">
+
+Send
+
+</button>
+
+
+</div>
+
+
+
+<div id="comments-${item.id}">
+
+</div>
+
+
+
+</div>
+
+
+`;
+
+
+
+loadComments(item.id);
+
+
+});
+
+
+}
+
+
+
+
+
+// Likes
+
+
+window.likePost = async(id)=>{
+
+
+await updateDoc(
+
+doc(db,"uploads",id),
+
+{
+
+likes:increment(1)
+
+}
+
+);
+
+
+location.reload();
+
+
+};
+
+
+
+
+
+
+// Comments
+
+
+window.comment = async(id)=>{
+
+
+const input =
+document.getElementById(
+"comment-"+id
+);
+
+
+
+if(!input.value) return;
+
+
+
+await addDoc(
+
+collection(db,"comments"),
+
+{
+
+uploadID:id,
+
+username:
+auth.currentUser.email,
+
+text:input.value,
+
+created:Date.now()
+
+}
+
+);
+
+
+
+input.value="";
+
+loadComments(id);
+
+
+};
+
+
+
+
+
+
+
+async function loadComments(id){
+
+
+const box =
+document.getElementById(
+"comments-"+id
+);
+
+
+const snapshot =
+await getDocs(
+collection(db,"comments")
+);
+
+
+
+snapshot.forEach((item)=>{
+
+
+let data=item.data();
+
+
+
+if(data.uploadID==id){
+
+
+box.innerHTML += `
+
+<p class="comment">
+
+💬 ${data.username}: ${data.text}
+
+</p>
+
+`;
+
+}
+
+
+});
+
+
+}
+
+
+
+loadPosts();
+
+
+
+</script>
+
+
+</body>
+
+</html>

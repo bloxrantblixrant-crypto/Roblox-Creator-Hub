@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Admin Panel - Roblox Creator Hub</title>
+
+<link rel="stylesheet" href="css/style.css">
+
+</head>
+
+
+<body>
+
+
+<header>
+
+<div class="logo">
+⚙️ Creator Hub Admin
+</div>
+
+</header>
+
+
+
+<section class="admin-container">
+
+
+<h1>
+👑 Owner Dashboard
+</h1>
+
+
+<div id="denied">
+
+Checking access...
+
+</div>
+
+
+
+<div id="panel" style="display:none;">
+
+
+
+<div class="admin-box">
+
+
+<h2>
+📢 Announcement
+</h2>
+
+
+<input 
+id="announcement"
+placeholder="Write announcement">
+
+
+<button id="saveAnnouncement">
+
+Publish
+
+</button>
+
+
+</div>
+
+
+
+
+
+<div class="admin-box">
+
+
+<h2>
+⭐ Featured Games
+</h2>
+
+
+<input 
+id="gameName"
+placeholder="Game name">
+
+
+<button id="featureGame">
+
+Feature Game
+
+</button>
+
+
+</div>
+
+
+
+
+
+<div class="admin-box">
+
+
+<h2>
+🗑 Manage Uploads
+</h2>
+
+
+<div id="uploads">
+
+Loading...
+
+</div>
+
+
+</div>
+
+
+
+</div>
+
+
+</section>
+
+
+
+
+<style>
+
+
+.admin-container{
+
+max-width:900px;
+
+margin:50px auto;
+
+padding:20px;
+
+}
+
+
+
+.admin-box{
+
+background:#171b24;
+
+padding:25px;
+
+border-radius:20px;
+
+margin:20px 0;
+
+}
+
+
+
+input{
+
+width:100%;
+
+padding:14px;
+
+background:#242938;
+
+border:none;
+
+border-radius:10px;
+
+color:white;
+
+margin:10px 0;
+
+}
+
+
+
+button{
+
+padding:12px 25px;
+
+border:none;
+
+border-radius:10px;
+
+background:linear-gradient(
+90deg,
+#4cc9ff,
+#7b5cff
+);
+
+color:white;
+
+cursor:pointer;
+
+}
+
+
+
+#denied{
+
+color:#ff5555;
+
+text-align:center;
+
+font-size:20px;
+
+}
+
+
+</style>
+
+
+
+
+
+<script type="module">
+
+
+import {auth,db} from "./js/firebase.js";
+
+
+import {
+
+onAuthStateChanged
+
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+
+
+import {
+
+doc,
+getDoc,
+setDoc,
+collection,
+getDocs,
+deleteDoc
+
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+
+
+
+
+onAuthStateChanged(auth,async(user)=>{
+
+
+if(!user){
+
+window.location.href="login.html";
+
+return;
+
+}
+
+
+
+const userData =
+await getDoc(
+doc(db,"users",user.uid)
+);
+
+
+
+if(
+userData.exists() &&
+userData.data().username==="TheRealAlteo1"
+
+){
+
+
+document.getElementById("panel").style.display="block";
+
+document.getElementById("denied").style.display="none";
+
+
+loadUploads();
+
+
+}
+
+else{
+
+
+document.getElementById("denied").innerHTML =
+"❌ Access Denied";
+
+
+}
+
+
+
+});
+
+
+
+
+
+
+
+// Announcement
+
+
+document.getElementById("saveAnnouncement").onclick =
+async()=>{
+
+
+let text =
+document.getElementById("announcement").value;
+
+
+
+await setDoc(
+
+doc(db,"website","settings"),
+
+{
+
+announcement:text
+
+}
+
+);
+
+
+
+alert("Announcement added!");
+
+};
+
+
+
+
+
+
+
+// Feature game
+
+
+document.getElementById("featureGame").onclick =
+async()=>{
+
+
+let game =
+document.getElementById("gameName").value;
+
+
+
+await setDoc(
+
+doc(db,"website","featured"),
+
+{
+
+game:game
+
+}
+
+);
+
+
+
+alert("Game featured!");
+
+};
+
+
+
+
+
+
+
+async function loadUploads(){
+
+
+const box =
+document.getElementById("uploads");
+
+
+const data =
+await getDocs(collection(db,"uploads"));
+
+
+
+box.innerHTML="";
+
+
+
+data.forEach(item=>{
+
+
+box.innerHTML += `
+
+<p>
+
+Upload ID:
+${item.id}
+
+<button onclick="deletePost('${item.id}')">
+
+Delete
+
+</button>
+
+</p>
+
+`;
+
+
+});
+
+
+}
+
+
+
+
+
+
+window.deletePost = async(id)=>{
+
+
+await deleteDoc(
+doc(db,"uploads",id)
+);
+
+
+
+alert("Deleted");
+
+
+location.reload();
+
+
+};
+
+
+
+</script>
+
+
+</body>
+
+</html>
